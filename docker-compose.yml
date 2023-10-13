@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  app.volei-gdo:
+    container_name: app.volei-gdo
+    restart: unless-stopped
+    tty: true
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./app:/var/www/html
+    depends_on:
+      - mysql.volei-gdo
+    networks:
+      - bubble
+
+  web.volei-gdo:
+    image: nginx:latest
+    container_name: web.volei-gdo
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx:/etc/nginx/conf.d:ro
+      - ./app:/var/www/html
+    networks:
+      - bubble
+    depends_on:
+      - app.volei-gdo
+
+  mysql.volei-gdo:
+    container_name: mysql.volei-gdo
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: volei-gdo
+      MYSQL_USER: volei-gdo
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+
+networks:
+  bubble :
+    external: true
